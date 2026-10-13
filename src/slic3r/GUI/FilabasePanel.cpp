@@ -9,6 +9,7 @@
 #include <utility>
 
 #include <wx/event.h>
+#include <wx/panel.h>
 #include <wx/gdicmn.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
