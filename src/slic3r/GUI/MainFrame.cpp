@@ -17,6 +17,7 @@
 #include <wx/busycursor.h>
 #include <cstddef>
 #include "slic3r/GUI/Project.hpp"
+#include "slic3r/GUI/FilabasePanel.hpp"
 #include <wx/bookctrl.h>
 #include "slic3r/GUI/LazyPage.hpp"
 #include "slic3r/GUI/Monitor.hpp"
@@ -1264,6 +1265,8 @@ void MainFrame::shutdown()
     m_idle.stop();
     if (ProjectPanel* project = ProjectPanel::if_built())
         project->shutdown();
+    if (FilabasePanel* filabase = FilabasePanel::if_built())
+        filabase->shutdown();
     m_plugin_pages.shutdown();
     if (m_plater != nullptr)
         m_plater->remove_dock_panes();
@@ -1550,6 +1553,11 @@ void MainFrame::init_tabpanel() {
     m_lazy_pages.push_back(m_project_page);
     m_tabpanel->AddPage(TAB_ID_PROJECT, m_project_page, _L("Project"), "tab_auxiliary_active");
 
+    // Remote content connects only when opened, never during idle prebuilding.
+    m_filabase_page = new LazyPage<FilabasePanel>(m_tabpanel, TAB_ID_FILABASE, -1);
+    m_lazy_pages.push_back(m_filabase_page);
+    m_tabpanel->AddPage(TAB_ID_FILABASE, m_filabase_page, "Filabase", "tab_filabase_active");
+
     // show_device() removes this tab for printers without the Bambu device tab, and the page
     // then never builds its panel.
     m_calibration_page = new LazyPage<CalibrationPanel>(m_tabpanel, TAB_ID_CALIBRATION, 30);
@@ -1617,7 +1625,7 @@ void MainFrame::show_device(bool should_use_native) {
         }
         if (!m_calibration_page->in_book()) {
             m_calibration_page->Show(false);
-            m_tabpanel->InsertPage(m_tabpanel->PositionAfter({TAB_ID_PROJECT}), TAB_ID_CALIBRATION, m_calibration_page,
+            m_tabpanel->InsertPage(m_tabpanel->PositionAfter({TAB_ID_FILABASE, TAB_ID_PROJECT}), TAB_ID_CALIBRATION, m_calibration_page,
                                    _L("Calibration"), "tab_calibration_active");
         }
 
@@ -1668,7 +1676,7 @@ void MainFrame::show_device(bool should_use_native) {
         m_calibration_page->Show(false);
         // Last of the built-in tabs, but plugin tabs already sit past it — anchor rather than
         // append, so its position doesn't depend on the relayout() below running afterwards.
-        m_tabpanel->InsertPage(m_tabpanel->PositionAfter({TAB_ID_PROJECT}), TAB_ID_CALIBRATION, m_calibration_page,
+        m_tabpanel->InsertPage(m_tabpanel->PositionAfter({TAB_ID_FILABASE, TAB_ID_PROJECT}), TAB_ID_CALIBRATION, m_calibration_page,
                                _L("Calibration"), "tab_calibration_active");
 
 #ifdef _MSW_DARK_MODE

@@ -33,6 +33,7 @@
 #include "Monitor.hpp"
 #include "Auxiliary.hpp"
 #include "Project.hpp"
+#include "FilabasePanel.hpp"
 #include "CalibrationPanel.hpp"
 #include "UnsavedChangesDialog.hpp"
 #include "Widgets/SideButton.hpp"
@@ -66,6 +67,7 @@
 #define TAB_ID_MONITOR_WEB   "monitor_web"
 #define TAB_ID_MULTI_DEVICE  "multi_device"
 #define TAB_ID_PROJECT       "project"
+#define TAB_ID_FILABASE      "filabase"
 #define TAB_ID_CALIBRATION   "calibration"
 
 #define ENABEL_PRINT_ALL 0
@@ -519,6 +521,7 @@ public:
     //AuxiliaryPanel*       m_auxiliary{ nullptr };
     LazyPage<MultiMachinePage>* m_multi_machine_page{ nullptr };
     LazyPage<ProjectPanel>* m_project_page{ nullptr };
+    LazyPage<FilabasePanel>* m_filabase_page{ nullptr };
 
     LazyPage<CalibrationPanel>* m_calibration_page{ nullptr };
     LazyPage<WebViewPanel>* m_home_page { nullptr };

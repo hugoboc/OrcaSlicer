@@ -3,6 +3,7 @@
 #include "OptionsGroup.hpp"
 #include "GUI_App.hpp"
 #include "MainFrame.hpp"
+#include "FilabasePanel.hpp"
 #include "WebViewDialog.hpp"
 #include "Plater.hpp"
 #include "GLCanvas3D.hpp" // ORCA: for live preview refresh when toggling "Dim lower layers"
@@ -21,6 +22,8 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <memory>
+#include <curl/curl.h>
 #include <cstdlib>
 #include <cassert>
 #include <algorithm>
@@ -60,6 +63,7 @@
 #include <wx/spinctrl.h>
 #include <wx/tglbtn.h>
 #include <wx/stattext.h>
+#include <wx/scrolwin.h>
 #include <wx/treebase.h>
 #include <wx/types.h>
 #include <wx/timer.h>
@@ -731,6 +735,54 @@ wxBoxSizer *PreferencesDialog::create_item_input(wxString title, wxString title2
     });
 
     return m_sizer;
+}
+
+wxBoxSizer* PreferencesDialog::create_item_filabase_url()
+{
+    const wxString tip = _L("Use the HTTP or HTTPS address of your Filabase installation, including its port and path if needed.");
+    auto row = create_item_label(_L("Filabase URL"), tip);
+    auto input = new ::TextInput(m_parent, wxString::FromUTF8(app_config->get("filabase_url")), wxEmptyString,
+                                 wxEmptyString, wxDefaultPosition, wxSize(FromDIP(260), -1), wxTE_PROCESS_ENTER);
+    input->SetName("filabase_url");
+    input->SetToolTip(tip);
+    row->Add(input, 0, wxALIGN_CENTER_VERTICAL);
+
+    const wxString hint = _L("Changes apply when you press Enter or leave the field.");
+    auto message = new wxStaticText(m_parent, wxID_ANY, hint);
+    message->SetFont(Label::Body_14);
+    message->SetForegroundColour(DESIGN_GRAY600_COLOR);
+    message->Wrap(FromDIP(540));
+    auto sizer = new wxBoxSizer(wxVERTICAL);
+    sizer->Add(row, 0, wxEXPAND);
+    sizer->Add(message, 0, wxLEFT | wxBOTTOM, FromDIP(DESIGN_LEFT_MARGIN));
+
+    auto apply_value = [this, input, message, hint]() {
+        wxString value = input->GetTextCtrl()->GetValue();
+        value.Trim().Trim(false);
+        const std::string url = value.ToUTF8().data();
+        const wxString lower = value.Lower();
+        const wxString authority = value.AfterFirst(':').Mid(2).BeforeFirst('/');
+        std::unique_ptr<CURLU, decltype(&curl_url_cleanup)> parsed(curl_url(), curl_url_cleanup);
+        const bool valid = (lower.StartsWith("http://") || lower.StartsWith("https://")) && !authority.empty() && parsed &&
+                           curl_url_set(parsed.get(), CURLUPART_URL, url.c_str(), 0) == CURLUE_OK;
+        message->SetLabel(valid ? hint : _L("Enter a valid HTTP or HTTPS URL. The saved address has not changed."));
+        message->Wrap(FromDIP(540));
+        m_parent->Layout();
+        m_parent->FitInside();
+        if (!valid)
+            return;
+
+        input->GetTextCtrl()->ChangeValue(value);
+        if (app_config->get("filabase_url") == url)
+            return;
+        app_config->set("filabase_url", url);
+        app_config->save();
+        if (auto panel = FilabasePanel::if_built())
+            panel->load_url(value);
+    };
+    input->GetTextCtrl()->Bind(wxEVT_TEXT_ENTER, [apply_value](wxCommandEvent& event) { apply_value(); event.Skip(); });
+    input->GetTextCtrl()->Bind(wxEVT_KILL_FOCUS, [apply_value](wxFocusEvent& event) { apply_value(); event.Skip(); });
+    return sizer;
 }
 
 wxBoxSizer *PreferencesDialog::create_item_spinctrl(wxString title, wxString title2, wxString side_label, wxString tooltip, std::string param, int min, int max, std::function<void(int)> onchange, const wxString wiki_url)
@@ -2181,6 +2233,10 @@ void PreferencesDialog::create_items()
         dlg.ShowModal();
     });
     g_sizer->Add(item_network_test);
+
+    //// ONLINE > Filabase
+    g_sizer->Add(create_item_title("Filabase"), 1, wxEXPAND);
+    g_sizer->Add(create_item_filabase_url(), 0, wxEXPAND);
 
     //// ONLINE > Cloud Providers
     g_sizer->Add(create_item_title(_L("Cloud Providers")), 1, wxEXPAND);

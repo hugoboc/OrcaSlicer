@@ -134,6 +134,7 @@ public:
     int m_current_language_selected = {0};
 
 private:
+    wxBoxSizer* create_item_filabase_url();
     std::tuple<wxBoxSizer*, ComboBox*> create_item_combobox_base(wxString title, wxString tooltip, std::string param, std::vector<wxString> vlist, unsigned int current_index, const wxString wiki_url = "");
 };
 

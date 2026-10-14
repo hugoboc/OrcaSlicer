@@ -129,6 +129,9 @@ void AppConfig::reset()
 void AppConfig::set_defaults()
 {
     if (m_mode == EAppMode::Editor) {
+        if (get("filabase_url").empty())
+            set("filabase_url", "http://192.168.0.23:7912/");
+
 #ifdef SUPPORT_AUTO_CENTER
         // Reset the empty fields to defaults.
         if (get("autocenter").empty())
