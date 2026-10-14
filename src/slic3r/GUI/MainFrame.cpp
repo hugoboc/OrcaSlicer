@@ -1556,7 +1556,7 @@ void MainFrame::init_tabpanel() {
     // Remote content connects only when opened, never during idle prebuilding.
     m_filabase_page = new LazyPage<FilabasePanel>(m_tabpanel, TAB_ID_FILABASE, -1);
     m_lazy_pages.push_back(m_filabase_page);
-    m_tabpanel->AddPage(TAB_ID_FILABASE, m_filabase_page, "Filabase", "tab_auxiliary_active");
+    m_tabpanel->AddPage(TAB_ID_FILABASE, m_filabase_page, "Filabase", "tab_filabase_active");
 
     // show_device() removes this tab for printers without the Bambu device tab, and the page
     // then never builds its panel.
