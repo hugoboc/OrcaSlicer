@@ -1549,14 +1549,14 @@ void MainFrame::init_tabpanel() {
         m_tabpanel->AddPage(TAB_ID_MULTI_DEVICE, m_multi_machine_page, _L("Multi-device"), "tab_multi_active");
     }
 
-    m_project_page = new LazyPage<ProjectPanel>(m_tabpanel, TAB_ID_PROJECT, 60);
-    m_lazy_pages.push_back(m_project_page);
-    m_tabpanel->AddPage(TAB_ID_PROJECT, m_project_page, _L("Project"), "tab_auxiliary_active");
-
     // Remote content connects only when opened, never during idle prebuilding.
     m_filabase_page = new LazyPage<FilabasePanel>(m_tabpanel, TAB_ID_FILABASE, -1);
     m_lazy_pages.push_back(m_filabase_page);
     m_tabpanel->AddPage(TAB_ID_FILABASE, m_filabase_page, "Filabase", "tab_filabase_active");
+
+    m_project_page = new LazyPage<ProjectPanel>(m_tabpanel, TAB_ID_PROJECT, 60);
+    m_lazy_pages.push_back(m_project_page);
+    m_tabpanel->AddPage(TAB_ID_PROJECT, m_project_page, _L("Project"), "tab_auxiliary_active");
 
     // show_device() removes this tab for printers without the Bambu device tab, and the page
     // then never builds its panel.
@@ -1625,7 +1625,7 @@ void MainFrame::show_device(bool should_use_native) {
         }
         if (!m_calibration_page->in_book()) {
             m_calibration_page->Show(false);
-            m_tabpanel->InsertPage(m_tabpanel->PositionAfter({TAB_ID_FILABASE, TAB_ID_PROJECT}), TAB_ID_CALIBRATION, m_calibration_page,
+            m_tabpanel->InsertPage(m_tabpanel->PositionAfter({TAB_ID_PROJECT, TAB_ID_FILABASE}), TAB_ID_CALIBRATION, m_calibration_page,
                                    _L("Calibration"), "tab_calibration_active");
         }
 
@@ -1676,7 +1676,7 @@ void MainFrame::show_device(bool should_use_native) {
         m_calibration_page->Show(false);
         // Last of the built-in tabs, but plugin tabs already sit past it — anchor rather than
         // append, so its position doesn't depend on the relayout() below running afterwards.
-        m_tabpanel->InsertPage(m_tabpanel->PositionAfter({TAB_ID_FILABASE, TAB_ID_PROJECT}), TAB_ID_CALIBRATION, m_calibration_page,
+        m_tabpanel->InsertPage(m_tabpanel->PositionAfter({TAB_ID_PROJECT, TAB_ID_FILABASE}), TAB_ID_CALIBRATION, m_calibration_page,
                                _L("Calibration"), "tab_calibration_active");
 
 #ifdef _MSW_DARK_MODE
